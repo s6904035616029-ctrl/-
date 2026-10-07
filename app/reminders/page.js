@@ -85,7 +85,7 @@ function Login() {
 /* ---------- แท็บยา ---------- */
 function Meds({ say }) {
   const [rows, setRows] = useState(null);
-  const [person, setPerson] = useState("คุณพ่อ");
+  const [person, setPerson] = useState("");
   const [name, setName] = useState("");
   const [dose, setDose] = useState("");
   const [time, setTime] = useState("");
@@ -101,13 +101,13 @@ function Meds({ say }) {
     e.preventDefault();
     if (!name.trim() || !time) return say("กรอกชื่อยาและเวลาทานก่อน", "err");
     const { error } = await supabase.from("medications").insert({
-      person: person.trim() || "คุณพ่อ",
+      person: person.trim() || "-",
       name: name.trim(),
       dose: dose.trim() || null,
       take_time: time,
     });
     if (error) return say("บันทึกไม่สำเร็จ: " + error.message, "err");
-    setName(""); setDose(""); setTime("");
+    setName(""); setDose(""); setTime(""); setPerson("");
     say("บันทึกแล้ว", "ok");
     load();
   }
@@ -130,7 +130,7 @@ function Meds({ say }) {
       <form className="panel" onSubmit={add}>
         <h2>เพิ่มยา</h2>
         <div className="row">
-          <div><label htmlFor="mPerson">ชื่อผู้ทาน</label><input id="mPerson" value={person} onChange={(e) => setPerson(e.target.value)} /></div>
+          <div><label htmlFor="mPerson">ชื่อผู้ทาน</label><input id="mPerson" value={person} onChange={(e) => setPerson(e.target.value)} placeholder="เช่น ตัวเอง, คุณแม่" /></div>
           <div><label htmlFor="mTime">เวลาทาน (เวลาไทย)</label><input id="mTime" type="time" value={time} onChange={(e) => setTime(e.target.value)} /></div>
         </div>
         <label htmlFor="mName">ชื่อยา</label>
@@ -167,7 +167,7 @@ function Meds({ say }) {
 /* ---------- แท็บนัดหมาย ---------- */
 function Appts({ say }) {
   const [rows, setRows] = useState(null);
-  const [person, setPerson] = useState("คุณพ่อ");
+  const [person, setPerson] = useState("");
   const [title, setTitle] = useState("");
   const [place, setPlace] = useState("");
   const [when, setWhen] = useState("");
@@ -184,7 +184,7 @@ function Appts({ say }) {
     e.preventDefault();
     if (!title.trim() || !when) return say("กรอกเรื่องและวัน-เวลานัดก่อน", "err");
     const { error } = await supabase.from("appointments").insert({
-      person: person.trim() || "คุณพ่อ",
+      person: person.trim() || "-",
       title: title.trim(),
       place: place.trim() || null,
       appt_at: new Date(when + ":00+07:00").toISOString(), // ตีความเป็นเวลาไทยเสมอ
@@ -192,7 +192,7 @@ function Appts({ say }) {
       sent: false,
     });
     if (error) return say("บันทึกไม่สำเร็จ: " + error.message, "err");
-    setTitle(""); setPlace(""); setWhen(""); setRemind("120");
+    setTitle(""); setPlace(""); setWhen(""); setRemind("120"); setPerson("");
     say("บันทึกแล้ว", "ok");
     load();
   }
@@ -209,7 +209,7 @@ function Appts({ say }) {
       <form className="panel" onSubmit={add}>
         <h2>เพิ่มนัดหมาย</h2>
         <div className="row">
-          <div><label htmlFor="aPerson">ผู้ไป</label><input id="aPerson" value={person} onChange={(e) => setPerson(e.target.value)} /></div>
+          <div><label htmlFor="aPerson">ผู้ไป</label><input id="aPerson" value={person} onChange={(e) => setPerson(e.target.value)} placeholder="เช่น ตัวเอง, คุณแม่" /></div>
           <div><label htmlFor="aWhen">วัน-เวลานัด (เวลาไทย)</label><input id="aWhen" type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)} /></div>
         </div>
         <label htmlFor="aTitle">เรื่อง</label>
