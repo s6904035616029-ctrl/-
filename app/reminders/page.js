@@ -63,7 +63,7 @@ function Login() {
     e.preventDefault();
     setErr("");
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) setErr("เข้าสู่ระบบไม่สำเร็จ ตรวจสอบอีเมลและรหัสผ่านอีกครั้ง");
+    if (error) setErr("เข้าสู่ระบบไม่สำเร็จ: " + error.message);
   }
 
   return (
