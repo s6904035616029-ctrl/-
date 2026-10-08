@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST(req) {
   try {
     const body = await req.json();
     const events = body.events || [];
@@ -8,7 +8,6 @@ export async function POST(req: Request) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // ถ้าตั้งค่า Key ใน Vercel ครบถ้วน ถึงจะเริ่มบันทึกข้อมูล
     if (supabaseUrl && supabaseServiceKey) {
       for (const event of events) {
         if (event.type === 'follow' || event.type === 'message') {
@@ -30,8 +29,7 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ status: 'success' }, { status: 200 });
-  } catch (error: any) {
-    // ส่ง 200 กลับไปเสมอเพื่อให้ Verify ผ่านได้
+  } catch (error) {
     return NextResponse.json({ status: 'error', message: error.message }, { status: 200 });
   }
 }
