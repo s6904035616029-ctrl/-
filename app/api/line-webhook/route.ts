@@ -5,34 +5,42 @@ export async function POST(req: Request) {
     const body = await req.json();
     const events = body.events || [];
 
+    // 1. ถ้าเป็นการยิง Verify จาก LINE (events จะเป็นอาเรย์ว่าง []) ให้คืนค่า 200 OK ทันที
+    if (events.length === 0) {
+      return NextResponse.json({ status: 'verified' }, { status: 200 });
+    }
+
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    // ทำงานเมื่อมี Key ครบถ้วน
-    if (supabaseUrl && supabaseServiceKey && events.length > 0) {
+    // 2. ถ้ามี Event เพิ่มเพื่อนหรือข้อความยิงเข้ามา ค่อยส่งไปบันทึกลง Supabase
+    if (supabaseUrl && supabaseServiceKey) {
       for (const event of events) {
         if (event.type === 'follow' || event.type === 'message') {
           const userId = event.source?.userId;
           if (userId) {
-            await fetch(`${supabaseUrl}/rest/v1/line_users`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'apikey': supabaseServiceKey,
-                'Authorization': `Bearer ${supabaseServiceKey}`,
-                'Prefer': 'resolution=merge-duplicates',
-              },
-              body: JSON.stringify({ user_id: userId }),
-            });
+            try {
+              await fetch(`${supabaseUrl}/rest/v1/line_users`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'apikey': supabaseServiceKey,
+                  'Authorization': `Bearer ${supabaseServiceKey}`,
+                  'Prefer': 'resolution=merge-duplicates',
+                },
+                body: JSON.stringify({ user_id: userId }),
+              });
+            } catch (dbError) {
+              console.error('Supabase Error:', dbError);
+            }
           }
         }
       }
     }
 
-    // คืนค่า 200 OK กลับไปให้ LINE เสมอเพื่อให้อนุมัติการ Verify
     return NextResponse.json({ status: 'success' }, { status: 200 });
   } catch (error: any) {
-    // ป้องกันไม่ให้ส่ง 401 หรือ 500 ออกไปหา LINE
-    return NextResponse.json({ status: 'success', message: error.message }, { status: 200 });
+    // ดัก Error ทั้งหมดเพื่อส่ง 200 กลับหา LINE เสมอ
+    return NextResponse.json({ status: 'success', error: error.message }, { status: 200 });
   }
 }
